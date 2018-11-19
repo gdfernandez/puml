@@ -1,0 +1,58 @@
+@startuml
+package "Gateway I" {
+  node "Transctions"{
+    [Agregator]
+    [Native]
+    [Balancer]
+    [ConsumerG2]
+  }
+  node OnlinePayments #FA5858
+  node PaymentsOffline
+}
+
+package "Gateway II" {
+  node Router
+  node Integration
+  node Channel #FA5858
+  node Notifier
+}
+
+package "Payments" {
+  node OP
+}
+
+node Vault #FA5858
+
+OP --> Native #black : ((with merchant account)) 
+OP --> Agregator #black : ((without merchant account))
+
+Native --> OnlinePayments #black
+Agregator --> Balancer #green : ((Operation Online))
+Balancer  --> OnlinePayments #black
+OnlinePayments --> Provider #black
+OnlinePayments --> Vault #black
+
+Balancer --> Router #green
+Agregator --> PaymentsOffline #black : ((Operation Offline))
+PaymentsOffline --> Router #black
+Router --> Integration #black
+Integration --> Channel #black
+Channel --> Provider #black
+Channel --> Vault #black
+
+Notifier ..> ConsumerG2 #black
+Integration ..> Notifier #black
+
+note left of [ConsumerG2]
+  Encargado de actualizar la operacion. 
+  Solo para offline.
+end note
+
+note left of [Balancer]
+  Encargado de balancer la carga entre OP y G2.
+   Banamex:
+    90%: OnlinePayments
+    10%: Gateway II
+end note
+
+@enduml
